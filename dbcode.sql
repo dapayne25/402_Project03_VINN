@@ -1,0 +1,156 @@
+
+USE master;
+IF DB_ID(N'VINN') IS NOT NULL DROP DATABASE VINN
+CREATE DATABASE VINN;
+GO
+USE VINN;
+GO
+CREATE SCHEMA Sales AUTHORIZATION dbo;
+GO
+CREATE SCHEMA Arrangements AUTHORIZATION dbo;
+GO
+
+CREATE TABLE Sales.Customer
+(
+	CustomerId INT NOT NULL IDENTITY,
+	Email NVARCHAR(100) NOT NULL ,
+	FName NVARCHAR(100) NOT NULL,
+	LName NVARCHAR(100) NOT NULL,
+	MInitial NVARCHAR(10) NOT NULL,
+	HomeAddress NVARCHAR(100) NOT NULL,
+	Phone NVARCHAR(100) NOT NULL,
+	CONSTRAINT PK_Customer PRIMARY KEY(CustomerId)
+	
+);
+
+CREATE TABLE Sales.Account
+(
+	AccountId INT NOT NULL IDENTITY,
+	CustomerId INT NOT NULL,
+	UserName NVARCHAR(100) NOT NULL, 
+	UserPassword NVARCHAR(100) NOT NULL, 
+	CONSTRAINT PK_Account PRIMARY KEY(AccountId),
+	CONSTRAINT FK_Account_Customer FOREIGN KEY(CustomerId) REFERENCES Sales.Customer(CustomerId)
+);
+
+CREATE TABLE Sales.Manager
+(
+	ManagerId INT NOT NULL,
+	FName NVARCHAR(1000) NOT NULL,
+	LName NVARCHAR(1000) NOT NULL,
+	CONSTRAINT PK_Manager PRIMARY KEY(ManagerId)
+);
+
+CREATE TABLE Sales.CreditCard
+(
+	CardId INT NOT NULL IDENTITY,
+	ManagerId INT NOT NULL, 
+	AccountId INT NOT NULL,
+	AcctNum NVARCHAR(20) NOT NULL,
+	CONSTRAINT PK_CreditCard PRIMARY KEY(CardId),
+	CONSTRAINT FK_CreditCard_Manager FOREIGN KEY(ManagerId) REFERENCES Sales.Manager(ManagerId),
+	CONSTRAINT FK_CreditCard_Account FOREIGN KEY(AccountId) REFERENCES Sales.Account(AccountId)
+);
+
+CREATE TABLE Sales.Receipt
+(
+	ReceiptId INT NOT NULL IDENTITY,
+	CustomerId INT NOT NULL,
+	ManagerId INT NOT NULL,
+	Reminder NVARCHAR(1000) NOT NULL,
+	CONSTRAINT PK_Receipt PRIMARY KEY(ReceiptId),
+	CONSTRAINT FK_Receipt_Customer FOREIGN KEY(CustomerId) REFERENCES Sales.Customer(CustomerId),
+	CONSTRAINT FK_Receipt_Manager FOREIGN KEY(ManagerId) REFERENCES Sales.Manager(ManagerId)
+);
+
+CREATE TABLE Sales.Employee
+(
+	EmpId INT NOT NULL IDENTITY,
+	FName NVARCHAR(100) NOT NULL,
+	LName NVARCHAR(100) NOT NULL, 
+	JobTitle NVARCHAR(100) NOT NULL,
+	DateHired DATE NOT NULL,
+	Salary MONEY NOT NULL, 
+	Specialty NVARCHAR(100) NOT NULL, 
+	WorkHistory NVARCHAR(100) NOT NULL,
+	CONSTRAINT PK_Employee PRIMARY KEY(EmpId)
+);
+
+CREATE TABLE Sales.EmpType
+(	
+	TypeId INT NOT NULL IDENTITY,
+	EmpId INT NOT NULL,
+	TypeName NVARCHAR(100) NOT NULL,
+	CONSTRAINT PK_EmpType PRIMARY KEY(TypeId),
+	CONSTRAINT FK_EmpType_Employee FOREIGN KEY(EmpId) REFERENCES Sales.Employee(EmpId)
+);
+
+CREATE TABLE Sales.WrkHist
+(
+	WrkHistId INT NOT NULL IDENTITY,
+	EmpId INT NOT NULL,
+	NewHire BIT NOT NULL,
+	CONSTRAINT PK_WrkHist PRIMARY KEY(WrkHistId),
+	CONSTRAINT FK_WrkHist_Employee FOREIGN KEY(EmpId) REFERENCES Sales.Employee(EmpId)
+);
+
+CREATE TABLE Arrangements.Room
+(
+	RoomId INT NOT NULL IDENTITY,
+	RoomNumber INT NOT NULL,
+	RoomType NVARCHAR(100) NOT NULL,
+	Cleaned BIT NOT NULL,
+	CONSTRAINT PK_Room PRIMARY KEY(RoomId)
+);
+
+
+CREATE TABLE Arrangements.Reservation
+(
+	ReservationId INT NOT NULL IDENTITY,
+	CustomerId INT NOT NULL,
+	RoomId INT NOT NULL, 
+	CheckInDate DATETIME2 NOT NULL,
+	CheckOutDate DATETIME2 NOT NULL,
+	RoomNum INT NOT NULL,
+	Price MONEY NOT NULL,
+	ActualCheckIn DATETIME2 NOT NULL, 
+	ActualCheckOut DATETIME2 NOT NULL, 
+	CONSTRAINT PK_ReservationId PRIMARY KEY(ReservationId),
+	CONSTRAINT FK_Reservation_Customer FOREIGN KEY(CustomerId) REFERENCES Sales.Customer(CustomerId),
+	CONSTRAINT FK_Reservation_Room FOREIGN KEY(RoomId) REFERENCES Arrangements.Room(RoomId)
+);
+
+CREATE TABLE Arrangements.ThirdParty
+(
+	TPId INT NOT NULL IDENTITY,
+	CustomerId INT NOT NULL,
+	ReservationId INT NOT NULL,
+	TPName NVARCHAR(500) NOT NULL
+	CONSTRAINT PK_ThirdParty PRIMARY KEY(TPId),
+	CONSTRAINT FK_ThirdParty_Customer FOREIGN KEY(CustomerId) REFERENCES Sales.Customer(CustomerId),
+	CONSTRAINT FK_ThirdParty_Reservation FOREIGN KEY(ReservationId) REFERENCES Arrangements.Reservation(ReservationId)
+
+);
+
+CREATE TABLE Arrangements.HouseKeeper
+(
+	HKId INT NOT NULL IDENTITY,
+	EmpId INT NOT NULL,
+	RoomId INT NOT NULL,
+	CONSTRAINT PK_HouseKeeper PRIMARY KEY(HKId),
+	CONSTRAINT FK_HouseKeeper_Employee FOREIGN KEY(EmpId) REFERENCES Sales.Employee(EmpId),
+	CONSTRAINT FK_HouseKeeper_Room FOREIGN KEY(RoomId) REFERENCES Arrangements.Room(RoomId)
+);
+
+CREATE TABLE Arrangements.Report
+(
+	ReportId INT NOT NULL IDENTITY,
+	EmpId INT NOT NULL,
+	CustomerId INT NOT NULL,
+	RoomId INT NOT NULL, 
+	MissingItem NVARCHAR(100),
+	CONSTRAINT PK_Report PRIMARY KEY(ReportId),
+	CONSTRAINT FK_Report_Employee FOREIGN KEY(EmpId) REFERENCES Sales.Employee(EmpId),
+	CONSTRAINT FK_Report_Customer FOREIGN KEY(CustomerId) REFERENCES Sales.Customer(CustomerId),
+	CONSTRAINT FK_Report_Room FOREIGN KEY(RoomId) REFERENCES Arrangements.Room(RoomId)
+);
