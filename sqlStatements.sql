@@ -15,8 +15,13 @@ ON R.RoomId = RE.RoomId;
 
 
 --c
+Select * From Arrangements.Reservation
+Where ReservationId = 9;
+
 --d
+SELECT * FROM Sales.Manager;
 --e
+
 --f
 --g
 --h
