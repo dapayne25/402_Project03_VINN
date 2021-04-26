@@ -2,6 +2,9 @@
 --a. display all available rooms. if more than 5 rooms available-don't show how many rooms are left
 --instead show how many rooms of that type are available
 
+Select * FROM Arrangements.Room
+Where Cleaned = 1;
+
 --b. customer reserves one king room and 2 queen rooms
 
 	INSERT INTO Arrangements.Reservation(CustomerId, RoomId, CheckInDate, CheckOutDate, RoomNum, Price, ActualCheckIn, ActualCheckOut)
